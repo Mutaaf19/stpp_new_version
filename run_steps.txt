@@ -1,0 +1,14 @@
+
+
+### How to run it yourself next time:
+If you want to run it directly from your terminal in the future, open your terminal (PowerShell/Command Prompt) in the `stock_pp` directory and run:
+
+```powershell
+$env:PYTHONIOENCODING="utf-8"
+py run.py
+```
+*(This sets the text encoding to UTF-8 to handle those emojis properly before launching the script)*
+
+Alternatively, you could also run them in two separate terminal windows as described in your `README.md`:
+- **Terminal 1 (Backend):** `py backend/app.py`
+- **Terminal 2 (Frontend):** `streamlit run frontend/app.py`

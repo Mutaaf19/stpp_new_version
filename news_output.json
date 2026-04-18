@@ -1,0 +1,603 @@
+[
+    {
+        "id": "c713d91e-a34e-3b38-9f2b-0837c9f68293",
+        "content": {
+            "id": "c713d91e-a34e-3b38-9f2b-0837c9f68293",
+            "contentType": "STORY",
+            "title": "HBO Max comes to India via exclusive JioHotstar deal",
+            "description": "",
+            "summary": "HBO Max will be available to JioHotstar subscribers as an add-on starting at \u20b949 (about $0.50) per month and would feature content from HBO, Max Originals, Warner Bros. Pictures, Warner Bros. Television, and DC Studios.",
+            "pubDate": "2026-04-15T12:47:17Z",
+            "displayTime": "2026-04-15T12:47:17Z",
+            "isHosted": true,
+            "bypassModal": false,
+            "previewUrl": null,
+            "thumbnail": {
+                "originalUrl": "https://media.zenfs.com/en/techcrunch_finance_785/140fdf5951f344938afa721a839960df",
+                "originalWidth": 720,
+                "originalHeight": 480,
+                "caption": "HBO Max icon on smartphone",
+                "resolutions": [
+                    {
+                        "url": "https://s.yimg.com/uu/api/res/1.2/i.g0Pxw3KlGhFl8bEHtbxw--~B/aD00ODA7dz03MjA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/techcrunch_finance_785/140fdf5951f344938afa721a839960df",
+                        "width": 720,
+                        "height": 480,
+                        "tag": "original"
+                    },
+                    {
+                        "url": "https://s.yimg.com/uu/api/res/1.2/bj2GzGJEuwGTjYhy8ePBuQ--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/techcrunch_finance_785/140fdf5951f344938afa721a839960df",
+                        "width": 170,
+                        "height": 128,
+                        "tag": "170x128"
+                    }
+                ]
+            },
+            "provider": {
+                "displayName": "TechCrunch",
+                "url": "https://techcrunch.com/",
+                "sourceId": "techcrunch_finance_785"
+            },
+            "canonicalUrl": {
+                "url": "https://finance.yahoo.com/sectors/technology/articles/hbo-max-comes-india-via-124717729.html",
+                "site": "finance",
+                "region": "US",
+                "lang": "en-US"
+            },
+            "clickThroughUrl": {
+                "url": "https://finance.yahoo.com/sectors/technology/articles/hbo-max-comes-india-via-124717729.html",
+                "site": "finance",
+                "region": "US",
+                "lang": "en-US"
+            },
+            "metadata": {
+                "editorsPick": false
+            },
+            "finance": {
+                "premiumFinance": {
+                    "isPremiumNews": false,
+                    "isPremiumFreeNews": false
+                }
+            },
+            "storyline": null
+        }
+    },
+    {
+        "id": "e3d64567-6fb7-3585-a3a8-78becf60edae",
+        "content": {
+            "id": "e3d64567-6fb7-3585-a3a8-78becf60edae",
+            "contentType": "STORY",
+            "title": "India permits Iranian oil tankers to berth for Reliance, sources say",
+            "description": "",
+            "summary": "By Nidhi Verma and Jonathan Saul NEW DELHI/LONDON, April 10 (Reuters) - India's shipping ministry has granted special permission to four vessels carrying Iranian oil - as requested by Reliance",
+            "pubDate": "2026-04-10T16:08:02Z",
+            "displayTime": "2026-04-10T16:08:02Z",
+            "isHosted": true,
+            "bypassModal": false,
+            "previewUrl": null,
+            "thumbnail": {
+                "originalUrl": "https://media.zenfs.com/en/reuters.com/288e0949c131b8a2465a5107d740bd26",
+                "originalWidth": 800,
+                "originalHeight": 562,
+                "caption": "A bird flies past a Reliance Industries logo installed on its mart in Ahmedabad, India January 16, 2017. REUTERS/Amit Dave",
+                "resolutions": [
+                    {
+                        "url": "https://s.yimg.com/uu/api/res/1.2/qrgw1ZIK8.aDmNHlGYIyRA--~B/aD01NjI7dz04MDA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/reuters.com/288e0949c131b8a2465a5107d740bd26",
+                        "width": 800,
+                        "height": 562,
+                        "tag": "original"
+                    },
+                    {
+                        "url": "https://s.yimg.com/uu/api/res/1.2/YhvlOO32rVeyDjthja_f7g--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/reuters.com/288e0949c131b8a2465a5107d740bd26",
+                        "width": 170,
+                        "height": 128,
+                        "tag": "170x128"
+                    }
+                ]
+            },
+            "provider": {
+                "displayName": "Reuters",
+                "url": "https://www.reuters.com/",
+                "sourceId": "reuters.com"
+            },
+            "canonicalUrl": {
+                "url": "https://sg.finance.yahoo.com/news/india-permits-iranian-oil-tankers-140136058.html",
+                "site": "finance",
+                "region": "SG",
+                "lang": "en-SG"
+            },
+            "clickThroughUrl": {
+                "url": "https://finance.yahoo.com/news/india-permits-iranian-oil-tankers-140136058.html",
+                "site": "finance",
+                "region": "US",
+                "lang": "en-US"
+            },
+            "metadata": {
+                "editorsPick": false
+            },
+            "finance": {
+                "premiumFinance": {
+                    "isPremiumNews": false,
+                    "isPremiumFreeNews": false
+                }
+            },
+            "storyline": null
+        }
+    },
+    {
+        "id": "d70e5b3d-a1d3-38a3-82a8-8ee803b9df54",
+        "content": {
+            "id": "d70e5b3d-a1d3-38a3-82a8-8ee803b9df54",
+            "contentType": "STORY",
+            "title": "India's Reliance buys Venezuelan oil directly from PDVSA, document and data show",
+            "description": "",
+            "summary": "By Marianna Parraga April 6 (Reuters) - A unit of India's refiner Reliance Industries has begun\u00a0loading a 2-million-barrel cargo of Venezuelan heavy crude directly bought from state-run energy company",
+            "pubDate": "2026-04-06T14:53:53Z",
+            "displayTime": "2026-04-06T14:53:53Z",
+            "isHosted": true,
+            "bypassModal": false,
+            "previewUrl": null,
+            "thumbnail": {
+                "originalUrl": "https://media.zenfs.com/en/reuters.com/ab56387db8d75b268c01c06ba39b7f92",
+                "originalWidth": 800,
+                "originalHeight": 533,
+                "caption": "FILE PHOTO: Fuel tank trucks of Venezuelan state oil company PDVSA parked at Puerto La Cruz oil refinery in Puerto La Cruz, Venezuela, January 21, 2026. REUTERS/Stringer/File Photo",
+                "resolutions": [
+                    {
+                        "url": "https://s.yimg.com/uu/api/res/1.2/znt1_2R4FJeHtGam0VtivQ--~B/aD01MzM7dz04MDA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/reuters.com/ab56387db8d75b268c01c06ba39b7f92",
+                        "width": 800,
+                        "height": 533,
+                        "tag": "original"
+                    },
+                    {
+                        "url": "https://s.yimg.com/uu/api/res/1.2/x0kZHGaFL26HlnDLLP3aVw--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/reuters.com/ab56387db8d75b268c01c06ba39b7f92",
+                        "width": 170,
+                        "height": 128,
+                        "tag": "170x128"
+                    }
+                ]
+            },
+            "provider": {
+                "displayName": "Reuters",
+                "url": "https://www.reuters.com/",
+                "sourceId": "reuters.com"
+            },
+            "canonicalUrl": {
+                "url": "https://sg.finance.yahoo.com/news/indias-reliance-buys-venezuelan-oil-140723293.html",
+                "site": "finance",
+                "region": "SG",
+                "lang": "en-SG"
+            },
+            "clickThroughUrl": {
+                "url": "https://finance.yahoo.com/news/indias-reliance-buys-venezuelan-oil-140723293.html",
+                "site": "finance",
+                "region": "US",
+                "lang": "en-US"
+            },
+            "metadata": {
+                "editorsPick": false
+            },
+            "finance": {
+                "premiumFinance": {
+                    "isPremiumNews": false,
+                    "isPremiumFreeNews": false
+                }
+            },
+            "storyline": null
+        }
+    },
+    {
+        "id": "a93eb5f0-a11d-340c-90c4-328fcf2820f7",
+        "content": {
+            "id": "a93eb5f0-a11d-340c-90c4-328fcf2820f7",
+            "contentType": "STORY",
+            "title": "How The Investment Story For Reliance Industries (NSEI:RELIANCE) Is Quietly Shifting On New Assumptions",
+            "description": "",
+            "summary": "Reliance Industries has seen its assessed fair value adjusted slightly higher, from \u20b91,717.11 to \u20b91,719.94, a move of about \u20b92.83. This kind of fine tuning lines up with how analysts across sectors are currently tweaking price targets rather than overhauling their views after strong share price moves. Read on to see what is driving this update and how you can track the evolving narrative around Reliance from here. Stay updated as the Fair Value for Reliance Industries shifts by adding it to...",
+            "pubDate": "2026-04-03T14:07:15Z",
+            "displayTime": "2026-04-03T14:07:15Z",
+            "isHosted": true,
+            "bypassModal": false,
+            "previewUrl": null,
+            "thumbnail": {
+                "originalUrl": "https://media.zenfs.com/en/simply_wall_st__316/0485d0c1021bfa3ad2518a171bbc021d",
+                "originalWidth": 1194,
+                "originalHeight": 432,
+                "caption": "",
+                "resolutions": [
+                    {
+                        "url": "https://s.yimg.com/uu/api/res/1.2/afwZ9FGjLmcR0P9A0eObAg--~B/aD00MzI7dz0xMTk0O2FwcGlkPXl0YWNoeW9u/https://media.zenfs.com/en/simply_wall_st__316/0485d0c1021bfa3ad2518a171bbc021d",
+                        "width": 1194,
+                        "height": 432,
+                        "tag": "original"
+                    },
+                    {
+                        "url": "https://s.yimg.com/uu/api/res/1.2/hgDWMeCKA94KLZ_d6_T8pg--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/simply_wall_st__316/0485d0c1021bfa3ad2518a171bbc021d",
+                        "width": 170,
+                        "height": 128,
+                        "tag": "170x128"
+                    }
+                ]
+            },
+            "provider": {
+                "displayName": "Simply Wall St.",
+                "url": "https://simplywall.st/",
+                "sourceId": "simply_wall_st__316"
+            },
+            "canonicalUrl": {
+                "url": "https://finance.yahoo.com/markets/stocks/articles/investment-story-reliance-industries-nsei-140715800.html",
+                "site": "finance",
+                "region": "US",
+                "lang": "en-US"
+            },
+            "clickThroughUrl": {
+                "url": "https://finance.yahoo.com/markets/stocks/articles/investment-story-reliance-industries-nsei-140715800.html",
+                "site": "finance",
+                "region": "US",
+                "lang": "en-US"
+            },
+            "metadata": {
+                "editorsPick": false
+            },
+            "finance": {
+                "premiumFinance": {
+                    "isPremiumNews": false,
+                    "isPremiumFreeNews": false
+                }
+            },
+            "storyline": null
+        }
+    },
+    {
+        "id": "a5d8e509-08e1-3553-b31b-be28e1f57990",
+        "content": {
+            "id": "a5d8e509-08e1-3553-b31b-be28e1f57990",
+            "contentType": "STORY",
+            "title": "India diesel exports to SE Asia hit 7-year high in March due to Iran war, data shows",
+            "description": "",
+            "summary": "By Trixie Yap SINGAPORE, March 31 (Reuters) - India's diesel exports to Southeast Asia surged to the highest in more than seven years in March, shipping data showed, as traders pivoted supply to cover",
+            "pubDate": "2026-04-01T01:51:53Z",
+            "displayTime": "2026-04-01T01:51:53Z",
+            "isHosted": true,
+            "bypassModal": false,
+            "previewUrl": null,
+            "thumbnail": {
+                "originalUrl": "https://media.zenfs.com/en/reuters.com/aa3c593268600bf25d0893471c66b8b9",
+                "originalWidth": 800,
+                "originalHeight": 501,
+                "caption": "FILE PHOTO: A worker fills diesel in a container at a fuel station in Kolkata, India, February 1, 2018. REUTERS/Rupak De Chowdhuri/File Photo",
+                "resolutions": [
+                    {
+                        "url": "https://s.yimg.com/uu/api/res/1.2/JL0Ph0FFAJrmIIYlbdnWzg--~B/aD01MDE7dz04MDA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/reuters.com/aa3c593268600bf25d0893471c66b8b9",
+                        "width": 800,
+                        "height": 501,
+                        "tag": "original"
+                    },
+                    {
+                        "url": "https://s.yimg.com/uu/api/res/1.2/DiSPUlS2a.r8X9_k.bS.eg--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/reuters.com/aa3c593268600bf25d0893471c66b8b9",
+                        "width": 170,
+                        "height": 128,
+                        "tag": "170x128"
+                    }
+                ]
+            },
+            "provider": {
+                "displayName": "Reuters",
+                "url": "https://www.reuters.com/",
+                "sourceId": "reuters.com"
+            },
+            "canonicalUrl": {
+                "url": "https://sg.finance.yahoo.com/news/india-diesel-exports-se-asia-091604646.html",
+                "site": "finance",
+                "region": "SG",
+                "lang": "en-SG"
+            },
+            "clickThroughUrl": {
+                "url": "https://finance.yahoo.com/news/india-diesel-exports-se-asia-091604646.html",
+                "site": "finance",
+                "region": "US",
+                "lang": "en-US"
+            },
+            "metadata": {
+                "editorsPick": false
+            },
+            "finance": {
+                "premiumFinance": {
+                    "isPremiumNews": false,
+                    "isPremiumFreeNews": false
+                }
+            },
+            "storyline": null
+        }
+    },
+    {
+        "id": "6ef51c36-f43d-3cb2-b911-95aae5f615a2",
+        "content": {
+            "id": "6ef51c36-f43d-3cb2-b911-95aae5f615a2",
+            "contentType": "STORY",
+            "title": "OpenAI Appoints JioStar CEO to Lead Asia Expansion Targeting 1.4 Billion India Market",
+            "description": "",
+            "summary": "New Asia-Pacific leadership and Tata partnership highlight OpenAI's push into high-growth regional markets.",
+            "pubDate": "2026-03-26T12:28:31Z",
+            "displayTime": "2026-03-26T12:28:31Z",
+            "isHosted": true,
+            "bypassModal": false,
+            "previewUrl": null,
+            "thumbnail": null,
+            "provider": {
+                "displayName": "GuruFocus.com",
+                "url": "http://www.gurufocus.com/",
+                "sourceId": "us.finance.gurufocus"
+            },
+            "canonicalUrl": {
+                "url": "https://finance.yahoo.com/sectors/technology/articles/openai-appoints-jiostar-ceo-lead-122831848.html",
+                "site": "finance",
+                "region": "US",
+                "lang": "en-US"
+            },
+            "clickThroughUrl": {
+                "url": "https://finance.yahoo.com/sectors/technology/articles/openai-appoints-jiostar-ceo-lead-122831848.html",
+                "site": "finance",
+                "region": "US",
+                "lang": "en-US"
+            },
+            "metadata": {
+                "editorsPick": false
+            },
+            "finance": {
+                "premiumFinance": {
+                    "isPremiumNews": false,
+                    "isPremiumFreeNews": false
+                }
+            },
+            "storyline": null
+        }
+    },
+    {
+        "id": "167cf266-b07b-3c3e-8408-77a7bfee2151",
+        "content": {
+            "id": "167cf266-b07b-3c3e-8408-77a7bfee2151",
+            "contentType": "STORY",
+            "title": "Exclusive-India's Reliance buys 5 million barrels of Iranian oil after US waiver, sources say",
+            "description": "",
+            "summary": "By Nidhi Verma and Siyi Liu NEW DELHI/SINGAPORE, March 24 (Reuters) - India's Reliance Industries, operator of the world's biggest refining complex, has purchased 5 million barrels of Iranian crude,",
+            "pubDate": "2026-03-24T10:06:43Z",
+            "displayTime": "2026-03-24T10:06:43Z",
+            "isHosted": true,
+            "bypassModal": false,
+            "previewUrl": null,
+            "thumbnail": {
+                "originalUrl": "https://media.zenfs.com/en/reuters.com/1d6475f6ba3fcc30c79ae5538cb9d77b",
+                "originalWidth": 800,
+                "originalHeight": 580,
+                "caption": "A guard walks past the Reliance Industries logo near the entrance of Dhirubhai Ambani Knowledge City in Navi Mumbai, March 15, 2024. REUTERS/Francis Mascarenhas",
+                "resolutions": [
+                    {
+                        "url": "https://s.yimg.com/uu/api/res/1.2/ssCV2wZzFzkp.Rxo8AIyPQ--~B/aD01ODA7dz04MDA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/reuters.com/1d6475f6ba3fcc30c79ae5538cb9d77b",
+                        "width": 800,
+                        "height": 580,
+                        "tag": "original"
+                    },
+                    {
+                        "url": "https://s.yimg.com/uu/api/res/1.2/oCAiEqlwluB81Rbl1pMN4A--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/reuters.com/1d6475f6ba3fcc30c79ae5538cb9d77b",
+                        "width": 170,
+                        "height": 128,
+                        "tag": "170x128"
+                    }
+                ]
+            },
+            "provider": {
+                "displayName": "Reuters",
+                "url": "https://www.reuters.com/",
+                "sourceId": "reuters.com"
+            },
+            "canonicalUrl": {
+                "url": "https://sg.finance.yahoo.com/news/exclusive-indias-reliance-buys-5-100643653.html",
+                "site": "finance",
+                "region": "SG",
+                "lang": "en-SG"
+            },
+            "clickThroughUrl": {
+                "url": "https://finance.yahoo.com/news/exclusive-indias-reliance-buys-5-100643653.html",
+                "site": "finance",
+                "region": "US",
+                "lang": "en-US"
+            },
+            "metadata": {
+                "editorsPick": false
+            },
+            "finance": {
+                "premiumFinance": {
+                    "isPremiumNews": false,
+                    "isPremiumFreeNews": false
+                }
+            },
+            "storyline": null
+        }
+    },
+    {
+        "id": "29bfe9fe-ddc2-3e50-b06f-415fa4b3a2a1",
+        "content": {
+            "id": "29bfe9fe-ddc2-3e50-b06f-415fa4b3a2a1",
+            "contentType": "STORY",
+            "title": "Factbox-Ambani's Reliance Jio: businesses and investors of the IPO-bound firm",
+            "description": "",
+            "summary": "MUMBAI, March 23 (Reuters) - Indian billionaire Mukesh Ambani's Reliance Jio Platforms is gearing up to file papers seeking regulatory approvals for a Mumbai listing, in what is likely to be the",
+            "pubDate": "2026-03-23T09:38:55Z",
+            "displayTime": "2026-03-23T09:38:55Z",
+            "isHosted": true,
+            "bypassModal": false,
+            "previewUrl": null,
+            "thumbnail": {
+                "originalUrl": "https://media.zenfs.com/en/reuters.com/58189a58259cdc536463a5c647b57758",
+                "originalWidth": 800,
+                "originalHeight": 525,
+                "caption": "File Photo: A woman rides her scooter past advertisements of Reliance Industries' Jio telecoms unit, in Ahmedabad, India, July 5, 2018. REUTERS/Amit Dave/FILE PHOTO",
+                "resolutions": [
+                    {
+                        "url": "https://s.yimg.com/uu/api/res/1.2/7tQs56tV8LF6WuDv12JI1w--~B/aD01MjU7dz04MDA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/reuters.com/58189a58259cdc536463a5c647b57758",
+                        "width": 800,
+                        "height": 525,
+                        "tag": "original"
+                    },
+                    {
+                        "url": "https://s.yimg.com/uu/api/res/1.2/2rVsPh0jNQ39WfrLhv1Htw--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/reuters.com/58189a58259cdc536463a5c647b57758",
+                        "width": 170,
+                        "height": 128,
+                        "tag": "170x128"
+                    }
+                ]
+            },
+            "provider": {
+                "displayName": "Reuters",
+                "url": "https://www.reuters.com/",
+                "sourceId": "reuters.com"
+            },
+            "canonicalUrl": {
+                "url": "https://sg.finance.yahoo.com/news/factbox-ambanis-reliance-jio-businesses-093855203.html",
+                "site": "finance",
+                "region": "SG",
+                "lang": "en-SG"
+            },
+            "clickThroughUrl": {
+                "url": "https://finance.yahoo.com/news/factbox-ambanis-reliance-jio-businesses-093855203.html",
+                "site": "finance",
+                "region": "US",
+                "lang": "en-US"
+            },
+            "metadata": {
+                "editorsPick": false
+            },
+            "finance": {
+                "premiumFinance": {
+                    "isPremiumNews": false,
+                    "isPremiumFreeNews": false
+                }
+            },
+            "storyline": null
+        }
+    },
+    {
+        "id": "b0937095-8a2a-383d-8280-14c43bb02f6d",
+        "content": {
+            "id": "b0937095-8a2a-383d-8280-14c43bb02f6d",
+            "contentType": "STORY",
+            "title": "India Coca\u2011Cola bottler SLMG says Middle East war risks pushing up prices",
+            "description": "",
+            "summary": "By Praveen Paramasivam March 23 (Reuters) - SLMG Beverages, Coca\u2011Cola's largest bottler in India, could raise some of its prices if rising packaging costs linked to the war in the Middle East are",
+            "pubDate": "2026-03-23T04:53:55Z",
+            "displayTime": "2026-03-23T04:53:55Z",
+            "isHosted": true,
+            "bypassModal": false,
+            "previewUrl": null,
+            "thumbnail": {
+                "originalUrl": "https://media.zenfs.com/en/reuters.com/0c1777c188090687118c4813e2d00d54",
+                "originalWidth": 800,
+                "originalHeight": 493,
+                "caption": "FILE PHOTO: Tripods of television crew stand in front of the Indian Supreme Court building in New Delhi December 7, 2010. REUTERS/B Mathur/File Photo",
+                "resolutions": [
+                    {
+                        "url": "https://s.yimg.com/uu/api/res/1.2/Wdg4Ct2jXDpn7lGEoqg49A--~B/aD00OTM7dz04MDA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/reuters.com/0c1777c188090687118c4813e2d00d54",
+                        "width": 800,
+                        "height": 493,
+                        "tag": "original"
+                    },
+                    {
+                        "url": "https://s.yimg.com/uu/api/res/1.2/Iut3ObyPyLTz9.FY4v3mVA--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/reuters.com/0c1777c188090687118c4813e2d00d54",
+                        "width": 170,
+                        "height": 128,
+                        "tag": "170x128"
+                    }
+                ]
+            },
+            "provider": {
+                "displayName": "Reuters",
+                "url": "https://www.reuters.com/",
+                "sourceId": "reuters.com"
+            },
+            "canonicalUrl": {
+                "url": "https://sg.finance.yahoo.com/news/india-coca-cola-bottler-slmg-045355963.html",
+                "site": "finance",
+                "region": "SG",
+                "lang": "en-SG"
+            },
+            "clickThroughUrl": {
+                "url": "https://finance.yahoo.com/news/india-coca-cola-bottler-slmg-045355963.html",
+                "site": "finance",
+                "region": "US",
+                "lang": "en-US"
+            },
+            "metadata": {
+                "editorsPick": false
+            },
+            "finance": {
+                "premiumFinance": {
+                    "isPremiumNews": false,
+                    "isPremiumFreeNews": false
+                }
+            },
+            "storyline": null
+        }
+    },
+    {
+        "id": "f49a1805-8f67-3df2-9b8e-29227986aaff",
+        "content": {
+            "id": "f49a1805-8f67-3df2-9b8e-29227986aaff",
+            "contentType": "STORY",
+            "title": "How The Reliance Industries (NSEI:RELIANCE) Story Is Evolving On Small Valuation Tweaks And New Deals",
+            "description": "",
+            "summary": "Reliance Industries has seen its modelled fair value adjusted slightly, from \u20b91,718.08 to \u20b91,717.11, a change of less than \u20b91. Street research on transport names such as Ryder shows how analysts often fine tune targets when they reassess earnings assumptions and valuation frameworks, which helps put this minor reset for Reliance into context. As you read on, you will see how to interpret these small price target moves and track the evolving analyst story around the stock. Analyst Price...",
+            "pubDate": "2026-03-20T10:06:50Z",
+            "displayTime": "2026-03-20T10:06:50Z",
+            "isHosted": true,
+            "bypassModal": false,
+            "previewUrl": null,
+            "thumbnail": {
+                "originalUrl": "https://media.zenfs.com/en/simply_wall_st__316/0485d0c1021bfa3ad2518a171bbc021d",
+                "originalWidth": 1194,
+                "originalHeight": 432,
+                "caption": "",
+                "resolutions": [
+                    {
+                        "url": "https://s.yimg.com/uu/api/res/1.2/afwZ9FGjLmcR0P9A0eObAg--~B/aD00MzI7dz0xMTk0O2FwcGlkPXl0YWNoeW9u/https://media.zenfs.com/en/simply_wall_st__316/0485d0c1021bfa3ad2518a171bbc021d",
+                        "width": 1194,
+                        "height": 432,
+                        "tag": "original"
+                    },
+                    {
+                        "url": "https://s.yimg.com/uu/api/res/1.2/hgDWMeCKA94KLZ_d6_T8pg--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/simply_wall_st__316/0485d0c1021bfa3ad2518a171bbc021d",
+                        "width": 170,
+                        "height": 128,
+                        "tag": "170x128"
+                    }
+                ]
+            },
+            "provider": {
+                "displayName": "Simply Wall St.",
+                "url": "https://simplywall.st/",
+                "sourceId": "simply_wall_st__316"
+            },
+            "canonicalUrl": {
+                "url": "https://finance.yahoo.com/markets/stocks/articles/reliance-industries-nsei-reliance-story-100650348.html",
+                "site": "finance",
+                "region": "US",
+                "lang": "en-US"
+            },
+            "clickThroughUrl": {
+                "url": "https://finance.yahoo.com/markets/stocks/articles/reliance-industries-nsei-reliance-story-100650348.html",
+                "site": "finance",
+                "region": "US",
+                "lang": "en-US"
+            },
+            "metadata": {
+                "editorsPick": false
+            },
+            "finance": {
+                "premiumFinance": {
+                    "isPremiumNews": false,
+                    "isPremiumFreeNews": false
+                }
+            },
+            "storyline": null
+        }
+    }
+]
