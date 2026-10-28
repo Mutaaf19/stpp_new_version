@@ -450,15 +450,29 @@ CHART_LAYOUT = dict(
 # ──────────────────────────────────────────────
 # Helper Functions
 # ──────────────────────────────────────────────
+@st.cache_data(ttl=600)
+def _api_call_cached(endpoint: str, params_key: str = "", timeout: int = 30) -> dict:
+    """Internal cached API call. Only successful responses stay in cache."""
+    resp = requests.get(f"{API_BASE}/{endpoint}", params=dict(p.split("=", 1) for p in params_key.split("&") if "=" in p) if params_key else None, timeout=timeout)
+    result = resp.json()
+    if not result.get("success", True):
+        # Don't let failures stay in cache — raise so st.cache_data skips caching
+        raise ValueError(result.get("error", "API returned an error"))
+    return result
+
+
 def api_call(endpoint: str, params: dict = None, timeout: int = 30) -> dict:
-    """Make an API call to the backend with configurable timeout."""
+    """Make an API call to the backend with configurable timeout. Errors are never cached."""
     try:
-        resp = requests.get(f"{API_BASE}/{endpoint}", params=params, timeout=timeout)
-        return resp.json()
+        # Build a stable string key from params so st.cache_data can hash it
+        params_key = "&".join(f"{k}={v}" for k, v in sorted(params.items())) if params else ""
+        return _api_call_cached(endpoint, params_key, timeout)
     except requests.exceptions.ConnectionError:
         return {"success": False, "error": "Cannot connect to backend. Ensure Flask server is running on port 5000."}
     except requests.exceptions.ReadTimeout:
         return {"success": False, "error": "Request timed out. The model may still be training. Please try again in a moment."}
+    except ValueError as e:
+        return {"success": False, "error": str(e)}
     except Exception as e:
         return {"success": False, "error": str(e)}
 
@@ -622,12 +636,14 @@ if analyze_btn and ticker_input:
         indicators = api_call("indicators", {"ticker": ticker, "period": period, "rsi_period": rsi_period})
 
     # ── Tabs for Charts ──
-    tab_price, tab_rsi, tab_predict, tab_recommend, tab_fundamentals = st.tabs([
+    tab_price, tab_rsi, tab_predict, tab_recommend, tab_fundamentals, tab_peers, tab_financials = st.tabs([
         "📈  Price & MAs",
         "📊  Indicators (RSI/MACD)",
         "🔮  ML Prediction",
         "💡  Recommendation",
-        "🏢  Fundamentals & News"
+        "🏢  Fundamentals & News",
+        "🏢  Peer Comparison",
+        "📋  Historical Financials",
     ])
 
     cs = stock_data.get("currency_symbol", "$")
@@ -956,12 +972,12 @@ if analyze_btn and ticker_input:
 
     # ── TAB 5: Fundamentals & News ──
     with tab_fundamentals:
-        st.markdown("""
+        st.html("""
         <div class="section-header">
             <span class="section-icon">🏢</span>
             <h2>Company Fundamentals & AI News Sentiment</h2>
         </div>
-        """, unsafe_allow_html=True)
+        """)
         
         with st.spinner("Fetching fundamentals and analyzing news..."):
             fund_data = api_call("fundamentals", {"ticker": ticker}, timeout=60)
@@ -971,7 +987,7 @@ if analyze_btn and ticker_input:
             s = fund_data.get("sentiment", {})
             news = fund_data.get("news", [])
             
-            st.markdown(f"""
+            st.html(f"""
             <div class="metric-grid" style="margin-bottom: 2rem;">
                 <div class="metric-card">
                     <div class="metric-label">Sector / Industry</div>
@@ -993,40 +1009,298 @@ if analyze_btn and ticker_input:
             
             <div style="background: rgba(30, 41, 59, 0.4); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 2rem;">
                 <h3 style="margin-top:0; color:#f8fafc; font-size:1.2rem;">Company Profile</h3>
-                <p style="color:#94a3b8; font-size:0.95rem; line-height:1.6;">{f.get('description', 'No description available.')[:800]}...</p>
+                <p style="color:#94a3b8; font-size:0.95rem; line-height:1.6;">{(f.get('description') or 'No description available.')[:800]}...</p>
             </div>
-            """, unsafe_allow_html=True)
+            """)
             
-            st.markdown("""
+            st.html("""
             <div class="section-header">
                 <span class="section-icon">📰</span>
-                <h2>News Sentiment Analysis (VADER)</h2>
+                <h2>News Sentiment Analysis (FinBERT)</h2>
             </div>
-            """, unsafe_allow_html=True)
+            """)
             
             ov_color = "#10b981" if s.get('overall') == 'Positive' else ("#ef4444" if s.get('overall') == 'Negative' else "#94a3b8")
-            st.markdown(f"""
+            st.html(f"""
             <div style="margin-bottom:1.5rem;">
                 <strong>Overall Sentiment: </strong> <span style="color:{ov_color}; font-weight:bold;">{s.get('overall')} (Score: {s.get('score')})</span>
             </div>
-            """, unsafe_allow_html=True)
+            """)
             
-            for article in news:
-                art_color = "#10b981" if article.get('sentiment') == 'Positive' else ("#ef4444" if article.get('sentiment') == 'Negative' else "#94a3b8")
-                date_str = f" | 📅 {article.get('date')}" if article.get('date') else ""
-                summary_html = f'<div style="margin-top:0.4rem; font-size:0.82rem; color:#64748b; line-height:1.5;">{article.get("summary", "")}</div>' if article.get("summary") else ""
-                st.markdown(f"""
-                <div style="padding:1rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
-                    <a href="{article.get('link')}" target="_blank" style="color:#60a5fa; text-decoration:none; font-weight:bold; font-size:1.05rem;">{article.get('title')}</a>
-                    {summary_html}
-                    <div style="margin-top:0.5rem; font-size:0.85rem; color:#94a3b8;">
-                        <span>🏢 {article.get('publisher')}{date_str}</span> | 
-                        <span style="color:{art_color}; font-weight:bold;">Sentiment: {article.get('sentiment')} ({round(article.get('score', 0), 2)})</span>
+            if not news:
+                st.info("No recent news articles found for this ticker.")
+            else:
+                for article in news:
+                    art_color = "#10b981" if article.get('sentiment') == 'Positive' else ("#ef4444" if article.get('sentiment') == 'Negative' else "#94a3b8")
+                    date_str = f" | 📅 {article.get('date')}" if article.get('date') else ""
+                    summary_html = f'<div style="margin-top:0.4rem; font-size:0.82rem; color:#64748b; line-height:1.5;">{article.get("summary", "")}</div>' if article.get("summary") else ""
+                    st.html(f"""
+                    <div style="padding:1rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <a href="{article.get('link')}" target="_blank" style="color:#60a5fa; text-decoration:none; font-weight:bold; font-size:1.05rem;">{article.get('title')}</a>
+                        {summary_html}
+                        <div style="margin-top:0.5rem; font-size:0.85rem; color:#94a3b8;">
+                            <span>🏢 {article.get('publisher')}{date_str}</span> | 
+                            <span style="color:{art_color}; font-weight:bold;">Sentiment: {article.get('sentiment')} ({round(article.get('score', 0), 2)})</span>
+                        </div>
                     </div>
-                </div>
-                """, unsafe_allow_html=True)
+                    """)
         else:
             st.error("Failed to load fundamentals.")
+
+
+
+    # ── TAB 7: Peer Comparison ──
+    with tab_peers:
+        st.markdown("""
+        <div class="section-header">
+            <span class="section-icon">🏢</span>
+            <h2>Peer Comparison</h2>
+        </div>
+        """, unsafe_allow_html=True)
+
+        with st.spinner("Fetching peer companies (this may take a moment)..."):
+            peers_data = api_call("peers", {"ticker": ticker}, timeout=90)
+
+        if peers_data and peers_data.get("success"):
+            industry = peers_data.get("industry", "Unknown")
+            analyzed = peers_data.get("analyzed_stock", {})
+            peers = peers_data.get("peers", [])
+
+            st.markdown(f"""
+            <div style="background: rgba(139,92,246,0.08); border: 1px solid rgba(139,92,246,0.2); border-radius: 12px; padding: 1rem 1.5rem; margin-bottom: 1.5rem;">
+                <span style="color: #c4b5fd; font-weight: 600;">Industry:</span>
+                <span style="color: #f1f5f9; font-weight: 700; margin-left: 0.5rem;">{industry}</span>
+            </div>
+            """, unsafe_allow_html=True)
+
+            def _fmt_mcap(val):
+                if val is None:
+                    return "N/A"
+                try:
+                    val = float(val)
+                    if val >= 1e12:
+                        return f"{val/1e12:.2f}T"
+                    if val >= 1e9:
+                        return f"{val/1e9:.2f}B"
+                    if val >= 1e6:
+                        return f"{val/1e6:.2f}M"
+                    return f"{val:,.2f}"
+                except (ValueError, TypeError):
+                    return str(val)
+
+            def _fmt_val(val, suffix=""):
+                if val is None:
+                    return "N/A"
+                return f"{val}{suffix}"
+
+            # Build comparison table using pandas DataFrame for reliable rendering
+            all_stocks = [analyzed] + peers
+            table_rows = []
+            for stk in all_stocks:
+                is_you = "✦ " if stk.get("ticker") == ticker else ""
+                table_rows.append({
+                    "Company": f"{is_you}{stk.get('name', stk.get('ticker', 'N/A'))}",
+                    "Ticker": stk.get("ticker", ""),
+                    "Price": _fmt_val(stk.get("current_price")),
+                    "Market Cap": _fmt_mcap(stk.get("market_cap")),
+                    "P/E": _fmt_val(stk.get("trailing_pe")),
+                    "P/B": _fmt_val(stk.get("price_to_book")),
+                    "ROE %": _fmt_val(stk.get("roe"), "%"),
+                    "D/E": _fmt_val(stk.get("debt_to_equity")),
+                    "Div Yield %": _fmt_val(stk.get("dividend_yield"), "%"),
+                    "Rev Growth %": _fmt_val(stk.get("revenue_growth"), "%"),
+                })
+
+            df_peers = pd.DataFrame(table_rows)
+            st.dataframe(
+                df_peers,
+                use_container_width=True,
+                hide_index=True,
+                height=min(400, 40 + 35 * len(table_rows)),
+            )
+
+            st.markdown(f"""
+            <div style="background: rgba(59,130,246,0.06); border: 1px solid rgba(59,130,246,0.12); border-radius: 12px; padding: 1rem 1.25rem; font-size: 0.82rem; color: #94a3b8; line-height: 1.6; margin-top: 1rem;">
+                <strong style="color: #3b82f6;">Note:</strong> Peer companies are the top stocks in the <strong>{industry}</strong> industry by market weight.
+                The row marked with <strong>✦</strong> is the stock you are analyzing.
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.error(f"Failed to load peer comparison: {peers_data.get('error', 'Unknown error') if peers_data else 'API unavailable'}")
+
+    # ── TAB 8: Historical Financials ──
+    with tab_financials:
+        st.markdown("""
+        <div class="section-header">
+            <span class="section-icon">📋</span>
+            <h2>Historical Financials</h2>
+        </div>
+        """, unsafe_allow_html=True)
+
+        with st.spinner("Fetching historical financials..."):
+            fin_data = api_call("financials-history", {"ticker": ticker}, timeout=30)
+
+        if fin_data and fin_data.get("success"):
+            fin_sub_tab1, fin_sub_tab2, fin_sub_tab3 = st.tabs([
+                "📊 Quarterly Results",
+                "📈 Annual Profit & Loss",
+                "🏦 Balance Sheet",
+            ])
+
+            def _fmt_fin_val(val, unit=""):
+                if val is None:
+                    return "N/A"
+                if abs(val) >= 1:
+                    return f"{val:,.2f}{unit}"
+                return f"{val}{unit}"
+
+            def _build_fin_table(data, columns, col_labels):
+                """Build a styled financial table from data list."""
+                if not data:
+                    return '<p style="color:#64748b;">No data available.</p>'
+
+                html = """
+                <div style="overflow-x: auto; margin: 1rem 0 2rem 0;">
+                <table style="width:100%; border-collapse: collapse; font-family: 'Inter', sans-serif; font-size: 0.85rem;">
+                    <thead>
+                        <tr style="background: rgba(59,130,246,0.12); border-bottom: 2px solid rgba(59,130,246,0.25);">
+                """
+                for label in col_labels:
+                    align = "left" if label == "Period" else "right"
+                    html += f'<th style="padding: 0.7rem 1rem; text-align: {align}; color: #93c5fd; font-weight: 600; white-space: nowrap;">{label}</th>'
+                html += "</tr></thead><tbody>"
+
+                for i, row in enumerate(data):
+                    bg = "rgba(255,255,255,0.02)" if i % 2 == 0 else "transparent"
+                    html += f'<tr style="background: {bg}; border-bottom: 1px solid rgba(255,255,255,0.04);">'
+                    for j, col in enumerate(columns):
+                        val = row.get(col)
+                        align = "left" if j == 0 else "right"
+                        color = "#f1f5f9"
+                        if val is not None and isinstance(val, (int, float)) and j > 0:
+                            if col in ("net_income", "operating_income", "gross_profit", "earnings_growth", "working_capital"):
+                                color = "#10b981" if val > 0 else "#ef4444"
+                        display = _fmt_fin_val(val, "B" if j > 0 and col != "basic_eps" and col != "diluted_eps" else "") if isinstance(val, (int, float)) else (val if val else "N/A")
+                        html += f'<td style="padding: 0.7rem 1rem; text-align: {align}; color: {color}; white-space: nowrap;">{display}</td>'
+                    html += "</tr>"
+                html += "</tbody></table></div>"
+                return html
+
+            # ── Sub-tab 1: Quarterly Results ──
+            with fin_sub_tab1:
+                quarterly = fin_data.get("quarterly_results", [])
+                st.markdown(f"""
+                <div style="margin-bottom: 0.5rem; margin-top: 0.5rem;">
+                    <span style="font-size:1.05rem; font-weight:700; color:#93c5fd;">Quarterly Results (Last 5 Quarters)</span>
+                    <span style="font-size:0.78rem; color:#64748b; margin-left:0.5rem;">Values in Billions ({cs} {stock_data.get('currency', 'USD')})</span>
+                </div>
+                """, unsafe_allow_html=True)
+
+                q_cols = ["period", "total_revenue", "ebitda", "operating_income", "net_income", "basic_eps"]
+                q_labels = ["Period", "Revenue", "EBITDA", "Oper. Income", "Net Income", "EPS"]
+                st.markdown(_build_fin_table(quarterly, q_cols, q_labels), unsafe_allow_html=True)
+
+                # Revenue vs Net Income bar chart
+                if quarterly:
+                    q_periods = [q["period"] for q in reversed(quarterly)]
+                    q_revenue = [q.get("total_revenue") or 0 for q in reversed(quarterly)]
+                    q_net = [q.get("net_income") or 0 for q in reversed(quarterly)]
+
+                    fig_q = go.Figure()
+                    fig_q.add_trace(go.Bar(name="Revenue", x=q_periods, y=q_revenue,
+                                           marker_color="#3b82f6", opacity=0.85))
+                    fig_q.add_trace(go.Bar(name="Net Income", x=q_periods, y=q_net,
+                                           marker_color="#10b981", opacity=0.85))
+                    fig_q.update_layout(
+                        barmode="group",
+                        template="plotly_dark",
+                        paper_bgcolor="rgba(0,0,0,0)",
+                        plot_bgcolor="rgba(0,0,0,0)",
+                        font=dict(family="Inter", color="#94a3b8"),
+                        title=dict(text="Revenue vs Net Income (Quarterly)", font=dict(size=14, color="#f1f5f9")),
+                        height=350,
+                        margin=dict(l=40, r=20, t=50, b=40),
+                        legend=dict(orientation="h", y=1.1, x=0.5, xanchor="center"),
+                    )
+                    st.plotly_chart(fig_q, use_container_width=True)
+
+            # ── Sub-tab 2: Annual P&L ──
+            with fin_sub_tab2:
+                annual_pl = fin_data.get("annual_pl", [])
+                st.markdown(f"""
+                <div style="margin-bottom: 0.5rem; margin-top: 0.5rem;">
+                    <span style="font-size:1.05rem; font-weight:700; color:#93c5fd;">Annual Profit & Loss (Last 4 Years)</span>
+                    <span style="font-size:0.78rem; color:#64748b; margin-left:0.5rem;">Values in Billions ({cs} {stock_data.get('currency', 'USD')})</span>
+                </div>
+                """, unsafe_allow_html=True)
+
+                pl_cols = ["period", "total_revenue", "cost_of_revenue", "gross_profit", "operating_income", "ebitda", "net_income", "basic_eps"]
+                pl_labels = ["Period", "Revenue", "Cost of Rev.", "Gross Profit", "Oper. Income", "EBITDA", "Net Income", "EPS"]
+                st.markdown(_build_fin_table(annual_pl, pl_cols, pl_labels), unsafe_allow_html=True)
+
+                if annual_pl:
+                    a_periods = [a["period"] for a in reversed(annual_pl)]
+                    a_revenue = [a.get("total_revenue") or 0 for a in reversed(annual_pl)]
+                    a_gross = [a.get("gross_profit") or 0 for a in reversed(annual_pl)]
+                    a_net = [a.get("net_income") or 0 for a in reversed(annual_pl)]
+
+                    fig_a = go.Figure()
+                    fig_a.add_trace(go.Bar(name="Revenue", x=a_periods, y=a_revenue, marker_color="#3b82f6", opacity=0.85))
+                    fig_a.add_trace(go.Bar(name="Gross Profit", x=a_periods, y=a_gross, marker_color="#f59e0b", opacity=0.85))
+                    fig_a.add_trace(go.Bar(name="Net Income", x=a_periods, y=a_net, marker_color="#10b981", opacity=0.85))
+                    fig_a.update_layout(
+                        barmode="group",
+                        template="plotly_dark",
+                        paper_bgcolor="rgba(0,0,0,0)",
+                        plot_bgcolor="rgba(0,0,0,0)",
+                        font=dict(family="Inter", color="#94a3b8"),
+                        title=dict(text="Annual Financial Summary", font=dict(size=14, color="#f1f5f9")),
+                        height=350,
+                        margin=dict(l=40, r=20, t=50, b=40),
+                        legend=dict(orientation="h", y=1.1, x=0.5, xanchor="center"),
+                    )
+                    st.plotly_chart(fig_a, use_container_width=True)
+
+            # ── Sub-tab 3: Balance Sheet ──
+            with fin_sub_tab3:
+                balance_sheet = fin_data.get("balance_sheet", [])
+                st.markdown(f"""
+                <div style="margin-bottom: 0.5rem; margin-top: 0.5rem;">
+                    <span style="font-size:1.05rem; font-weight:700; color:#93c5fd;">Balance Sheet Summary (Last 4 Years)</span>
+                    <span style="font-size:0.78rem; color:#64748b; margin-left:0.5rem;">Values in Billions ({cs} {stock_data.get('currency', 'USD')})</span>
+                </div>
+                """, unsafe_allow_html=True)
+
+                bs_cols = ["period", "total_assets", "total_debt", "stockholders_equity", "cash", "net_debt", "working_capital"]
+                bs_labels = ["Period", "Total Assets", "Total Debt", "Equity", "Cash", "Net Debt", "Working Capital"]
+                st.markdown(_build_fin_table(balance_sheet, bs_cols, bs_labels), unsafe_allow_html=True)
+
+                if balance_sheet:
+                    bs_periods = [b["period"] for b in reversed(balance_sheet)]
+                    bs_assets = [b.get("total_assets") or 0 for b in reversed(balance_sheet)]
+                    bs_debt = [b.get("total_debt") or 0 for b in reversed(balance_sheet)]
+                    bs_equity = [b.get("stockholders_equity") or 0 for b in reversed(balance_sheet)]
+                    bs_cash = [b.get("cash") or 0 for b in reversed(balance_sheet)]
+
+                    fig_bs = go.Figure()
+                    fig_bs.add_trace(go.Bar(name="Total Assets", x=bs_periods, y=bs_assets, marker_color="#3b82f6", opacity=0.85))
+                    fig_bs.add_trace(go.Bar(name="Total Debt", x=bs_periods, y=bs_debt, marker_color="#ef4444", opacity=0.85))
+                    fig_bs.add_trace(go.Bar(name="Equity", x=bs_periods, y=bs_equity, marker_color="#10b981", opacity=0.85))
+                    fig_bs.add_trace(go.Bar(name="Cash", x=bs_periods, y=bs_cash, marker_color="#f59e0b", opacity=0.85))
+                    fig_bs.update_layout(
+                        barmode="group",
+                        template="plotly_dark",
+                        paper_bgcolor="rgba(0,0,0,0)",
+                        plot_bgcolor="rgba(0,0,0,0)",
+                        font=dict(family="Inter", color="#94a3b8"),
+                        title=dict(text="Balance Sheet Composition", font=dict(size=14, color="#f1f5f9")),
+                        height=350,
+                        margin=dict(l=40, r=20, t=50, b=40),
+                        legend=dict(orientation="h", y=1.1, x=0.5, xanchor="center"),
+                    )
+                    st.plotly_chart(fig_bs, use_container_width=True)
+        else:
+            st.error(f"Failed to load historical financials: {fin_data.get('error', 'Unknown error') if fin_data else 'API unavailable'}")
 
     # ── Disclaimer ──
     st.markdown("""

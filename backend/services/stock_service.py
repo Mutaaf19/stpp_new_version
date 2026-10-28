@@ -102,29 +102,62 @@ def fetch_stock_data(ticker: str, period: str = "1y") -> dict:
     except Exception as e:
         return {"success": False, "error": str(e)}
 
+def _fetch_google_news(query: str, max_items: int = 10) -> list:
+    """
+    Fetch news articles from Google News RSS feed as a fallback.
+    Returns a list of dicts with title, summary, publisher, link, date.
+    """
+    import requests as req
+    import xml.etree.ElementTree as ET
+    from urllib.parse import quote_plus
+
+    try:
+        url = f"https://news.google.com/rss/search?q={quote_plus(query)}&hl=en&gl=US&ceid=US:en"
+        resp = req.get(url, timeout=10)
+        if resp.status_code != 200:
+            return []
+
+        root = ET.fromstring(resp.text)
+        items = root.findall(".//item")
+        results = []
+
+        for item in items[:max_items]:
+            title = item.find("title").text if item.find("title") is not None else ""
+            link = item.find("link").text if item.find("link") is not None else ""
+            pub_date = item.find("pubDate").text if item.find("pubDate") is not None else ""
+            source = item.find("source").text if item.find("source") is not None else ""
+
+            results.append({
+                "title": title,
+                "summary": "",
+                "publisher": source,
+                "link": link,
+                "pubDate": pub_date,
+            })
+
+        return results
+    except Exception:
+        return []
+
+
 def fetch_fundamentals_news(ticker: str) -> dict:
     """Fetch company fundamentals and news sentiment."""
     ticker = normalize_ticker(ticker)
     import math
     from datetime import datetime
     try:
-        from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
-        analyzer = SentimentIntensityAnalyzer()
+        from backend.utils.sentiment import get_financial_sentiment
         
         stock = yf.Ticker(ticker)
         info = stock.info
-        news = stock.news
         
-        # Analyze sentiment
-        news_list = []
-        total_compound = 0
-        valid_news = 0
+        # Try yfinance news first, fall back to Google News RSS
+        news = stock.news
+        raw_news = []
         
         if news:
-            for n in news[:10]: # Top 10 articles for comprehensive analysis
-                # Handle new yf format where data is inside 'content'
+            for n in news[:10]:
                 content = n.get("content", n)
-                
                 title = content.get("title", "")
                 summary = content.get("summary", "")
                 
@@ -143,38 +176,74 @@ def fetch_fundamentals_news(ticker: str) -> dict:
                 pub_date_raw = content.get("pubDate", "")
                 pub_date = pub_date_raw.split("T")[0] if "T" in pub_date_raw else pub_date_raw
                 
-                # Calculate time decay weight
-                weight = 1.0
-                if pub_date:
+                raw_news.append({
+                    "title": title,
+                    "summary": summary,
+                    "publisher": publisher,
+                    "link": link,
+                    "date": pub_date,
+                })
+        
+        # Fallback to Google News RSS if yfinance returned nothing
+        if not raw_news:
+            company_name = info.get("shortName", ticker.replace(".NS", "").replace(".BO", ""))
+            google_results = _fetch_google_news(f"{company_name} stock")
+            for g in google_results:
+                # Parse Google RSS date format: "Wed, 28 Oct 2026 04:55:35 GMT"
+                pub_date = ""
+                if g.get("pubDate"):
                     try:
-                        # Attempt to parse date and calculate age in days
-                        news_dt = datetime.strptime(pub_date, "%Y-%m-%d")
-                        age_days = (datetime.now() - news_dt).days
-                        if age_days > 0:
-                            # Exponential decay: half-life of 7 days
-                            weight = math.exp(-age_days / 7.0)
+                        dt = datetime.strptime(g["pubDate"], "%a, %d %b %Y %H:%M:%S %Z")
+                        pub_date = dt.strftime("%Y-%m-%d")
                     except Exception:
-                        pass
+                        pub_date = g["pubDate"]
                 
-                if title:
-                    # Analyze both title and summary for richer sentiment
-                    full_text = f"{title}. {summary}" if summary else title
-                    sentiment = analyzer.polarity_scores(full_text)
-                    compound = sentiment["compound"]
-                    time_weighted_score = compound * weight
-                    
-                    total_compound += time_weighted_score
-                    valid_news += 1
-                    news_list.append({
-                        "title": title,
-                        "summary": summary[:200] if summary else "",
-                        "publisher": publisher,
-                        "link": link,
-                        "date": pub_date,
-                        "sentiment": "Positive" if compound > 0.05 else ("Negative" if compound < -0.05 else "Neutral"),
-                        "score": compound,
-                        "time_weighted_score": round(time_weighted_score, 4)
-                    })
+                raw_news.append({
+                    "title": g.get("title", ""),
+                    "summary": g.get("summary", ""),
+                    "publisher": g.get("publisher", ""),
+                    "link": g.get("link", ""),
+                    "date": pub_date,
+                })
+        
+        # Analyze sentiment for all collected news
+        news_list = []
+        total_compound = 0
+        valid_news = 0
+        
+        for article in raw_news:
+            title = article.get("title", "")
+            summary = article.get("summary", "")
+            pub_date = article.get("date", "")
+            
+            # Calculate time decay weight
+            weight = 1.0
+            if pub_date:
+                try:
+                    news_dt = datetime.strptime(pub_date, "%Y-%m-%d")
+                    age_days = (datetime.now() - news_dt).days
+                    if age_days > 0:
+                        weight = math.exp(-age_days / 7.0)
+                except Exception:
+                    pass
+            
+            if title:
+                full_text = f"{title}. {summary}" if summary else title
+                compound = get_financial_sentiment(full_text)
+                time_weighted_score = compound * weight
+                
+                total_compound += time_weighted_score
+                valid_news += 1
+                news_list.append({
+                    "title": title,
+                    "summary": summary[:200] if summary else "",
+                    "publisher": article.get("publisher", ""),
+                    "link": article.get("link", ""),
+                    "date": pub_date,
+                    "sentiment": "Positive" if compound > 0.05 else ("Negative" if compound < -0.05 else "Neutral"),
+                    "score": compound,
+                    "time_weighted_score": round(time_weighted_score, 4)
+                })
         
         avg_sentiment = (total_compound / valid_news) if valid_news > 0 else 0
         overall_sentiment = "Positive" if avg_sentiment > 0.1 else ("Negative" if avg_sentiment < -0.1 else "Neutral")
@@ -199,3 +268,4 @@ def fetch_fundamentals_news(ticker: str) -> dict:
         }
     except Exception as e:
         return {"success": False, "error": str(e)}
+

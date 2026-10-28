@@ -5,6 +5,8 @@ Handles Indian stocks by cleaning data before training.
 """
 import os
 import sys
+import json
+import datetime
 import numpy as np
 import pandas as pd
 import yfinance as yf
@@ -22,6 +24,7 @@ import backend.services.indicator_service as ind_service
 LOOKBACK = 60  # Number of past days to use for prediction
 PREDICTION_DAYS = 30  # Default number of days to forecast
 MODEL_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "data", "models")
+CACHE_DIR = os.path.join(MODEL_DIR, "prediction_cache")
 
 
 import joblib
@@ -73,6 +76,25 @@ def predict_prices(ticker: str, days: int = PREDICTION_DAYS) -> dict:
     8. Inverse transform predictions
     """
     ticker = normalize_ticker(ticker)
+    
+    # === Same-Day Prediction Cache ===
+    # Return cached result if this ticker+days was already predicted today.
+    # This prevents predictions from changing on repeated clicks when the market is closed.
+    os.makedirs(CACHE_DIR, exist_ok=True)
+    today_str = datetime.date.today().isoformat()
+    cache_key = f"{ticker.replace('.', '_')}_{days}d"
+    cache_file = os.path.join(CACHE_DIR, f"{cache_key}.json")
+    
+    if os.path.exists(cache_file):
+        try:
+            with open(cache_file, "r") as f:
+                cached = json.load(f)
+            if cached.get("_cache_date") == today_str:
+                # Remove internal cache metadata before returning
+                cached.pop("_cache_date", None)
+                return cached
+        except Exception:
+            pass  # Cache corrupted, proceed with fresh prediction
     
     try:
         # Fetch 2 years of data for training
@@ -142,8 +164,7 @@ def predict_prices(ticker: str, days: int = PREDICTION_DAYS) -> dict:
         
         # Incorporate Live News Sentiment (per-ticker, real-time via yfinance)
         try:
-            from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
-            analyzer = SentimentIntensityAnalyzer()
+            from backend.utils.sentiment import get_financial_sentiment
             
             live_news = stock.news  # yfinance fetches latest news for THIS ticker
             sentiment_by_date = {}
@@ -155,7 +176,6 @@ def predict_prices(ticker: str, days: int = PREDICTION_DAYS) -> dict:
                     pub_date_raw = content.get("pubDate", content.get("providerPublishTime", ""))
                     
                     if isinstance(pub_date_raw, (int, float)):
-                        import datetime
                         pub_date = datetime.datetime.fromtimestamp(pub_date_raw).strftime("%Y-%m-%d")
                     elif isinstance(pub_date_raw, str) and pub_date_raw:
                         pub_date = pub_date_raw.split("T")[0]
@@ -165,7 +185,7 @@ def predict_prices(ticker: str, days: int = PREDICTION_DAYS) -> dict:
                     # Score both title and summary for richer sentiment
                     text = f"{title}. {summary}" if summary else title
                     if text.strip():
-                        score = analyzer.polarity_scores(text)["compound"]
+                        score = get_financial_sentiment(text)
                         if pub_date in sentiment_by_date:
                             sentiment_by_date[pub_date].append(score)
                         else:
@@ -283,7 +303,7 @@ def predict_prices(ticker: str, days: int = PREDICTION_DAYS) -> dict:
         predicted_change = predicted_final - current_price
         predicted_change_pct = (predicted_change / current_price) * 100
         
-        return {
+        result = {
             "success": True,
             "ticker": ticker,
             "current_price": round(current_price, 2),
@@ -302,6 +322,17 @@ def predict_prices(ticker: str, days: int = PREDICTION_DAYS) -> dict:
                 "direction": "up" if predicted_change > 0 else "down",
             },
         }
+        
+        # === Cache result for same-day stability ===
+        try:
+            cache_data = result.copy()
+            cache_data["_cache_date"] = today_str
+            with open(cache_file, "w") as f:
+                json.dump(cache_data, f)
+        except Exception:
+            pass  # Non-critical: cache write failure doesn't affect prediction
+        
+        return result
     
     except Exception as e:
         return {"success": False, "error": str(e)}

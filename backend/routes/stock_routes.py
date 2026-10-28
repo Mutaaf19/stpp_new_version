@@ -7,6 +7,7 @@ from backend.services.stock_service import fetch_stock_data, validate_ticker
 from backend.services.indicator_service import calculate_all_indicators
 from backend.services.prediction_service import predict_prices
 from backend.services.recommendation_service import generate_recommendation
+from backend.services.screener_service import fetch_financial_ratios, fetch_peer_comparison, fetch_historical_financials
 
 
 api = Blueprint("api", __name__, url_prefix="/api")
@@ -162,4 +163,46 @@ def api_fundamentals():
     if not result["success"]:
         return jsonify(result), 404
     
+    return jsonify(result)
+
+
+@api.route("/ratios", methods=["GET"])
+def api_ratios():
+    """Fetch detailed financial ratios for a stock."""
+    ticker = request.args.get("ticker", "").strip()
+    if not ticker:
+        return jsonify({"success": False, "error": "Ticker is required"}), 400
+
+    result = fetch_financial_ratios(ticker)
+    if not result["success"]:
+        return jsonify(result), 404
+
+    return jsonify(result)
+
+
+@api.route("/peers", methods=["GET"])
+def api_peers():
+    """Fetch peer comparison for a stock."""
+    ticker = request.args.get("ticker", "").strip()
+    if not ticker:
+        return jsonify({"success": False, "error": "Ticker is required"}), 400
+
+    result = fetch_peer_comparison(ticker)
+    if not result["success"]:
+        return jsonify(result), 404
+
+    return jsonify(result)
+
+
+@api.route("/financials-history", methods=["GET"])
+def api_financials_history():
+    """Fetch historical financial statements."""
+    ticker = request.args.get("ticker", "").strip()
+    if not ticker:
+        return jsonify({"success": False, "error": "Ticker is required"}), 400
+
+    result = fetch_historical_financials(ticker)
+    if not result["success"]:
+        return jsonify(result), 404
+
     return jsonify(result)

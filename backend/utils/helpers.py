@@ -75,12 +75,12 @@ def period_to_days(period: str) -> int:
 def get_news_sentiment_df(json_path: str):
     """
     Reads news_output.json and returns a DataFrame of daily sentiment scores.
-    Uses Vader to parse headlines. Returns empty DataFrame on failure.
+    Uses FinBERT to parse headlines. Returns empty DataFrame on failure.
     """
     import json
     import pandas as pd
     try:
-        from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+        from backend.utils.sentiment import get_financial_sentiment
     except ImportError:
         return pd.DataFrame()
         
@@ -88,7 +88,6 @@ def get_news_sentiment_df(json_path: str):
         with open(json_path, 'r', encoding='utf-8') as f:
             news_data = json.load(f)
             
-        analyzer = SentimentIntensityAnalyzer()
         records = []
         
         for item in news_data:
@@ -98,7 +97,7 @@ def get_news_sentiment_df(json_path: str):
             if date_str and title:
                 # Extract YYYY-MM-DD
                 dt = date_str.split("T")[0]
-                score = analyzer.polarity_scores(title)["compound"]
+                score = get_financial_sentiment(title)
                 records.append({"Date": dt, "Sentiment_Score": score})
                 
         if not records:

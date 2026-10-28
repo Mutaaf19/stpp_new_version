@@ -4,9 +4,16 @@ Defines and builds the LSTM neural network for stock price prediction.
 """
 import numpy as np
 import os
+import random
 import tensorflow as tf
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"  # Suppress TF warnings
+
+# === Deterministic Seeds for Reproducible Predictions ===
+SEED = 42
+random.seed(SEED)
+np.random.seed(SEED)
+tf.random.set_seed(SEED)
 
 from tensorflow.keras.models import Sequential, load_model, Model
 from tensorflow.keras.layers import Input, LSTM, GRU, Conv1D, MaxPooling1D, Flatten, Dense, Dropout, BatchNormalization, MultiHeadAttention, Average, Add
