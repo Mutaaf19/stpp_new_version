@@ -1537,14 +1537,6 @@ class handler(BaseHTTPRequestHandler):
             return self._send_json(err_payload, 500)
 
 
-# Expose standard WSGI app compatibility if Vercel probes for app
-def app(environ, start_response):
-    body = HTML_TEMPLATE.encode("utf-8")
-    start_response("200 OK", [
-        ("Content-Type", "text/html; charset=utf-8"),
-        ("Content-Length", str(len(body)))
-    ])
-    return [body]
 
 
 if __name__ == "__main__":
