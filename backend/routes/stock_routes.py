@@ -5,7 +5,7 @@ All REST API endpoints for stock data, indicators, predictions, and recommendati
 from flask import Blueprint, request, jsonify
 from backend.services.stock_service import fetch_stock_data, validate_ticker
 from backend.services.indicator_service import calculate_all_indicators
-# prediction_service is imported lazily inside api_predict
+from backend.services.prediction_service import predict_prices
 from backend.services.recommendation_service import generate_recommendation
 from backend.services.screener_service import fetch_financial_ratios, fetch_peer_comparison, fetch_historical_financials
 
@@ -84,11 +84,7 @@ def api_predict():
     except ValueError:
         days = 30
     
-    try:
-        from backend.services.prediction_service import predict_prices
-        result = predict_prices(ticker, days)
-    except Exception as e:
-        return jsonify({"success": False, "error": f"Prediction requires ML environment: {str(e)}"}), 503
+    result = predict_prices(ticker, days)
     return jsonify(result)
 
 
