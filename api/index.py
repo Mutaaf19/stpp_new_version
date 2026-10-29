@@ -1343,25 +1343,13 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 # FLASK API ENDPOINTS
 # ─────────────────────────────────────────────────────────────
 
-@app.route("/", defaults={"path": ""})
+@app.route("/")
 @app.route("/api/index.py")
 @app.route("/api/index")
 @app.route("/api")
 @app.route("/dashboard")
-def home(path=""):
-    """Serve the interactive stock dashboard or dispatch rewritten API calls."""
-    action = request.args.get("_path")
-    if action:
-        clean_action = action.replace("api/", "").strip("/")
-        if clean_action == "health": return api_health()
-        if clean_action == "validate-ticker": return api_validate_ticker()
-        if clean_action == "stock-data": return api_stock_data()
-        if clean_action == "indicators": return api_indicators()
-        if clean_action == "recommend": return api_recommend()
-        if clean_action == "ratios": return api_ratios()
-        if clean_action == "peers": return api_peers()
-        if clean_action == "fundamentals": return api_fundamentals()
-        if clean_action == "predict": return api_predict()
+def home():
+    """Serve the interactive stock dashboard."""
     return render_template_string(HTML_TEMPLATE)
 
 @app.errorhandler(404)
