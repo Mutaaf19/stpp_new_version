@@ -15,7 +15,13 @@ from sklearn.preprocessing import MinMaxScaler, MaxAbsScaler
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from ml.model import tune_and_train_model, save_model, load_trained_model
+# TensorFlow / LSTM model is optional — not available on Vercel (too large)
+try:
+    from ml.model import tune_and_train_model, save_model, load_trained_model
+    _ML_AVAILABLE = True
+except (ImportError, Exception):
+    _ML_AVAILABLE = False
+
 from backend.utils.helpers import normalize_ticker
 import backend.services.indicator_service as ind_service
 
@@ -76,7 +82,15 @@ def predict_prices(ticker: str, days: int = PREDICTION_DAYS) -> dict:
     8. Inverse transform predictions
     """
     ticker = normalize_ticker(ticker)
-    
+
+    # LSTM predictions require TensorFlow — not available on serverless deployments
+    if not _ML_AVAILABLE:
+        return {
+            "success": False,
+            "error": "LSTM prediction is not available on this deployment (TensorFlow not installed). "
+                     "Run the app locally for full ML predictions.",
+        }
+
     # === Same-Day Prediction Cache ===
     # Return cached result if this ticker+days was already predicted today.
     # This prevents predictions from changing on repeated clicks when the market is closed.
