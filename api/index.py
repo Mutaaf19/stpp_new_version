@@ -22,6 +22,20 @@ from flask import Flask, request, jsonify, render_template_string
 
 app = Flask(__name__)
 
+class VercelPathFixMiddleware:
+    def __init__(self, wsgi_app):
+        self.wsgi_app = wsgi_app
+
+    def __call__(self, environ, start_response):
+        matched = environ.get("HTTP_X_MATCHED_PATH") or environ.get("HTTP_X_FORWARDED_URI")
+        if matched:
+            environ["PATH_INFO"] = matched.split("?")[0]
+        elif environ.get("PATH_INFO") in ["/api/index.py", "/api/index", "/api"]:
+            environ["PATH_INFO"] = "/"
+        return self.wsgi_app(environ, start_response)
+
+app.wsgi_app = VercelPathFixMiddleware(app.wsgi_app)
+
 # Native CORS handling
 @app.after_request
 def add_cors_headers(response):
@@ -1330,9 +1344,19 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 # ─────────────────────────────────────────────────────────────
 
 @app.route("/")
+@app.route("/api/index.py")
+@app.route("/api/index")
+@app.route("/api")
+@app.route("/dashboard")
 def home():
     """Serve the interactive stock dashboard."""
     return render_template_string(HTML_TEMPLATE)
+
+@app.errorhandler(404)
+def handle_404(e):
+    if request.path.startswith("/api/") and request.path not in ["/api", "/api/index.py", "/api/index"]:
+        return jsonify({"error": "API route not found", "path": request.path}), 404
+    return render_template_string(HTML_TEMPLATE), 200
 
 @app.route("/api/health")
 def api_health():
