@@ -1,7 +1,7 @@
 """
-Stock Price Prediction System — Vercel Native Serverless Application
-Self-contained Python application using Vercel's native BaseHTTPRequestHandler.
-Bypasses WSGI adapter bottlenecks, requires zero compilation, and guarantees 100% serverless compatibility.
+Stock Price Prediction System — Vercel Serverless Application
+Self-contained Flask web application serving both the REST API and the interactive frontend dashboard.
+Uses lightweight direct market data endpoints for fast, zero-dependency serverless execution.
 """
 import os
 import sys
@@ -11,8 +11,35 @@ import traceback
 import urllib.request
 import urllib.error
 import urllib.parse
-from http.server import BaseHTTPRequestHandler
 from datetime import datetime
+
+# Ensure project root is on the Python path
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
+
+from flask import Flask, request, jsonify, render_template_string
+
+app = Flask(__name__)
+
+# Native CORS handling
+@app.after_request
+def add_cors_headers(response):
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+    return response
+
+# Optional VADER sentiment
+try:
+    from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+    _analyzer = SentimentIntensityAnalyzer()
+    def get_sentiment(text):
+        if not text: return 0.0
+        return _analyzer.polarity_scores(text).get("compound", 0.0)
+except Exception:
+    def get_sentiment(text): return 0.0
+
 
 # ─────────────────────────────────────────────────────────────
 # YAHOO FINANCE DIRECT ENGINE
@@ -34,7 +61,7 @@ def _fetch_yahoo_chart(ticker: str, period: str = "1y"):
         "Accept": "application/json"
     })
     
-    with urllib.request.urlopen(req, timeout=8) as resp:
+    with urllib.request.urlopen(req, timeout=10) as resp:
         data = json.loads(resp.read().decode("utf-8"))
         
     result = data.get("chart", {}).get("result")
@@ -1298,250 +1325,228 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 </html>
 """
 
-
 # ─────────────────────────────────────────────────────────────
-# VERCEL SERVERLESS HANDLER
+# FLASK API ENDPOINTS
 # ─────────────────────────────────────────────────────────────
 
-class handler(BaseHTTPRequestHandler):
-    """Native Vercel Serverless Function Handler."""
+@app.route("/")
+def home():
+    """Serve the interactive stock dashboard."""
+    return render_template_string(HTML_TEMPLATE)
 
-    def _send_json(self, data, code=200):
-        body = json.dumps(data).encode("utf-8")
-        self.send_response(code)
-        self.send_header("Content-Type", "application/json")
-        self.send_header("Content-Length", str(len(body)))
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET, OPTIONS")
-        self.end_headers()
-        self.wfile.write(body)
+@app.route("/api/health")
+def api_health():
+    return jsonify({
+        "status": "ok",
+        "service": "Stock Price Prediction & Screener API",
+        "timestamp": datetime.utcnow().isoformat()
+    })
 
-    def _send_html(self, html_str, code=200):
-        body = html_str.encode("utf-8")
-        self.send_response(code)
-        self.send_header("Content-Type", "text/html; charset=utf-8")
-        self.send_header("Content-Length", str(len(body)))
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.end_headers()
-        self.wfile.write(body)
+@app.route("/api/validate-ticker")
+def api_validate_ticker():
+    ticker = request.args.get("ticker", "").strip()
+    if not ticker:
+        return jsonify({"valid": False, "error": "Ticker is required"}), 400
+    try:
+        data = _fetch_yahoo_chart(ticker, period="1m")
+        return jsonify({
+            "valid": True,
+            "ticker": data["ticker"],
+            "name": data["name"],
+            "currency": data["currency"],
+            "exchange": data["exchange"]
+        })
+    except Exception as e:
+        return jsonify({"valid": False, "error": str(e)}), 404
 
-    def do_OPTIONS(self):
-        self.send_response(204)
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
-        self.end_headers()
-
-    def do_GET(self):
-        try:
-            parsed = urllib.parse.urlparse(self.path)
-            path = parsed.path
-            params = urllib.parse.parse_qs(parsed.query)
-
-            # Serve Frontend at root
-            if path in ["/", "", "/index", "/dashboard"]:
-                return self._send_html(HTML_TEMPLATE)
-
-            # Health Check
-            if path in ["/api/health", "/api/ping"]:
-                return self._send_json({
-                    "status": "ok",
-                    "service": "Stock Price Prediction System API",
-                    "timestamp": datetime.utcnow().isoformat()
-                })
-
-            # Validate Ticker
-            if path == "/api/validate-ticker":
-                ticker = params.get("ticker", [""])[0].strip()
-                if not ticker:
-                    return self._send_json({"valid": False, "error": "Ticker required"}, 400)
-                try:
-                    c = _fetch_yahoo_chart(ticker, "1m")
-                    return self._send_json({
-                        "valid": True,
-                        "ticker": c["ticker"],
-                        "name": c["name"],
-                        "currency": c["currency"],
-                        "exchange": c["exchange"]
-                    })
-                except Exception as e:
-                    return self._send_json({"valid": False, "error": str(e)}, 404)
-
-            # Stock Data
-            if path == "/api/stock-data":
-                ticker = params.get("ticker", [""])[0].strip()
-                period = params.get("period", ["1y"])[0]
-                if not ticker:
-                    return self._send_json({"success": False, "error": "Ticker required"}, 400)
-                try:
-                    chart = _fetch_yahoo_chart(ticker, period)
-                    return self._send_json({
-                        "success": True,
-                        "metadata": {
-                            "ticker": chart["ticker"],
-                            "name": chart["name"],
-                            "currency": chart["currency"],
-                            "current_price": chart["current_price"],
-                            "previous_close": chart["previous_close"],
-                            "day_change": chart["day_change"],
-                            "day_change_percent": chart["day_change_percent"],
-                            "day_high": chart["day_high"],
-                            "day_low": chart["day_low"],
-                            "fifty_two_week_high": chart["fifty_two_week_high"],
-                            "fifty_two_week_low": chart["fifty_two_week_low"],
-                            "exchange": chart["exchange"]
-                        },
-                        "data": {
-                            "dates": chart["dates"],
-                            "open": chart["open"],
-                            "high": chart["high"],
-                            "low": chart["low"],
-                            "close": chart["close"],
-                            "volume": chart["volume"]
-                        }
-                    })
-                except Exception as e:
-                    return self._send_json({"success": False, "error": str(e)}, 500)
-
-            # Technical Indicators
-            if path == "/api/indicators":
-                ticker = params.get("ticker", [""])[0].strip()
-                period = params.get("period", ["1y"])[0]
-                if not ticker:
-                    return self._send_json({"success": False, "error": "Ticker required"}, 400)
-                try:
-                    chart = _fetch_yahoo_chart(ticker, period)
-                    indicators = _calculate_indicators(chart["close"], chart["dates"])
-                    return self._send_json({
-                        "success": True,
-                        "ticker": ticker,
-                        "indicators": indicators,
-                        "dates": chart["dates"]
-                    })
-                except Exception as e:
-                    return self._send_json({"success": False, "error": str(e)}, 500)
-
-            # Recommendation Engine
-            if path == "/api/recommend":
-                ticker = params.get("ticker", [""])[0].strip()
-                period = params.get("period", ["1y"])[0]
-                if not ticker:
-                    return self._send_json({"success": False, "error": "Ticker required"}, 400)
-                try:
-                    chart = _fetch_yahoo_chart(ticker, period)
-                    indicators = _calculate_indicators(chart["close"], chart["dates"])
-                    rec = _generate_recommendation(
-                        chart["close"],
-                        indicators["MA20"],
-                        indicators["MA50"],
-                        indicators["RSI"]
-                    )
-                    return self._send_json({"success": True, "ticker": ticker, **rec})
-                except Exception as e:
-                    return self._send_json({"success": False, "error": str(e)}, 500)
-
-            # Ratios
-            if path == "/api/ratios":
-                ticker = params.get("ticker", [""])[0].strip()
-                if not ticker:
-                    return self._send_json({"success": False, "error": "Ticker required"}, 400)
-                try:
-                    chart = _fetch_yahoo_chart(ticker, "1m")
-                    price = chart["current_price"]
-                    return self._send_json({
-                        "success": True,
-                        "ticker": ticker,
-                        "ratios": {
-                            "Valuation": {
-                                "Current Price": f"{chart['currency']} {price:.2f}",
-                                "52W High": f"{chart['currency']} {chart['fifty_two_week_high']:.2f}",
-                                "52W Low": f"{chart['currency']} {chart['fifty_two_week_low']:.2f}",
-                                "Day Range": f"{chart['day_low']:.2f} - {chart['day_high']:.2f}"
-                            },
-                            "Performance": {
-                                "Day Change": f"{chart['day_change']:+.2f}",
-                                "Day Change %": f"{chart['day_change_percent']:+.2f}%",
-                                "Previous Close": f"{chart['previous_close']:.2f}"
-                            }
-                        }
-                    })
-                except Exception as e:
-                    return self._send_json({"success": False, "error": str(e)}, 500)
-
-            # Peers
-            if path == "/api/peers":
-                ticker = params.get("ticker", ["AAPL"])[0].strip().upper()
-                peer_map = {
-                    "AAPL": ["MSFT", "GOOGL", "AMZN", "META"],
-                    "MSFT": ["AAPL", "GOOGL", "AMZN", "NVDA"],
-                    "NVDA": ["AMD", "INTC", "TSM", "QCOM"],
-                    "TSLA": ["RIVN", "LCID", "F", "GM"],
-                    "RELIANCE.NS": ["TCS.NS", "INFY.NS", "HDFCBANK.NS", "ICICIBANK.NS"],
-                    "TCS.NS": ["INFY.NS", "WIPRO.NS", "HCLTECH.NS", "TECHM.NS"],
-                    "INFY.NS": ["TCS.NS", "WIPRO.NS", "HCLTECH.NS", "LTIM.NS"],
-                }
-                peers = peer_map.get(ticker, ["AAPL", "MSFT", "NVDA", "GOOGL"])
-                peers_data = []
-                for p in peers[:4]:
-                    try:
-                        c = _fetch_yahoo_chart(p, "1m")
-                        peers_data.append({
-                            "ticker": p,
-                            "name": c["name"],
-                            "price": c["current_price"],
-                            "pe": None,
-                            "market_cap": None,
-                            "profit_margin": 0.15
-                        })
-                    except Exception:
-                        pass
-                return self._send_json({"success": True, "ticker": ticker, "peers": peers_data})
-
-            # Fundamentals / News
-            if path == "/api/fundamentals":
-                ticker = params.get("ticker", ["AAPL"])[0].strip().upper()
-                news_items = []
-                try:
-                    rss_url = f"https://news.google.com/rss/search?q={urllib.parse.quote(ticker + ' stock')}&hl=en-US&gl=US&ceid=US:en"
-                    req = urllib.request.Request(rss_url, headers={"User-Agent": "Mozilla/5.0"})
-                    with urllib.request.urlopen(req, timeout=5) as resp:
-                        import xml.etree.ElementTree as ET
-                        tree = ET.fromstring(resp.read().decode("utf-8"))
-                        for item in tree.findall(".//item")[:6]:
-                            title = item.find("title").text if item.find("title") is not None else ""
-                            link = item.find("link").text if item.find("link") is not None else ""
-                            pub_date = item.find("pubDate").text if item.find("pubDate") is not None else ""
-                            news_items.append({
-                                "title": title,
-                                "link": link,
-                                "date": pub_date[:16] if pub_date else "Recent",
-                                "publisher": "Google News",
-                                "sentiment": "Positive",
-                                "score": 0.15,
-                                "summary": ""
-                            })
-                except Exception:
-                    pass
-                return self._send_json({"success": True, "ticker": ticker, "news": news_items})
-
-            # Fallback 404
-            return self._send_json({"error": "Endpoint not found", "path": path}, 404)
-
-        except Exception as e:
-            # Catch ANY uncaught exception and return detailed JSON traceback
-            err_payload = {
-                "error": str(e),
-                "traceback": traceback.format_exc(),
-                "path": self.path
+@app.route("/api/stock-data")
+def api_stock_data():
+    ticker = request.args.get("ticker", "").strip()
+    period = request.args.get("period", "1y")
+    if not ticker:
+        return jsonify({"success": False, "error": "Ticker is required"}), 400
+    try:
+        chart = _fetch_yahoo_chart(ticker, period)
+        return jsonify({
+            "success": True,
+            "metadata": {
+                "ticker": chart["ticker"],
+                "name": chart["name"],
+                "currency": chart["currency"],
+                "current_price": chart["current_price"],
+                "previous_close": chart["previous_close"],
+                "day_change": chart["day_change"],
+                "day_change_percent": chart["day_change_percent"],
+                "day_high": chart["day_high"],
+                "day_low": chart["day_low"],
+                "fifty_two_week_high": chart["fifty_two_week_high"],
+                "fifty_two_week_low": chart["fifty_two_week_low"],
+                "exchange": chart["exchange"]
+            },
+            "data": {
+                "dates": chart["dates"],
+                "open": chart["open"],
+                "high": chart["high"],
+                "low": chart["low"],
+                "close": chart["close"],
+                "volume": chart["volume"]
             }
-            return self._send_json(err_payload, 500)
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
 
+@app.route("/api/indicators")
+def api_indicators():
+    ticker = request.args.get("ticker", "").strip()
+    period = request.args.get("period", "1y")
+    try:
+        rsi_period = int(request.args.get("rsi_period", 14))
+    except ValueError:
+        rsi_period = 14
 
+    if not ticker:
+        return jsonify({"success": False, "error": "Ticker is required"}), 400
+    try:
+        chart = _fetch_yahoo_chart(ticker, period)
+        indicators = _calculate_indicators(chart["close"], chart["dates"], rsi_period=rsi_period)
+        return jsonify({
+            "success": True,
+            "ticker": ticker,
+            "indicators": indicators,
+            "dates": chart["dates"]
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
 
+@app.route("/api/recommend")
+def api_recommend():
+    ticker = request.args.get("ticker", "").strip()
+    period = request.args.get("period", "1y")
+    if not ticker:
+        return jsonify({"success": False, "error": "Ticker is required"}), 400
+    try:
+        chart = _fetch_yahoo_chart(ticker, period)
+        indicators = _calculate_indicators(chart["close"], chart["dates"])
+        recommendation = _generate_recommendation(
+            chart["close"],
+            indicators["MA20"],
+            indicators["MA50"],
+            indicators["RSI"],
+            sentiment_score=0.1
+        )
+        return jsonify({"success": True, "ticker": ticker, **recommendation})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/api/ratios")
+def api_ratios():
+    ticker = request.args.get("ticker", "").strip()
+    if not ticker:
+        return jsonify({"success": False, "error": "Ticker is required"}), 400
+    try:
+        chart = _fetch_yahoo_chart(ticker, "1m")
+        price = chart["current_price"]
+        return jsonify({
+            "success": True,
+            "ticker": ticker,
+            "ratios": {
+                "Valuation": {
+                    "Current Price": f"{chart['currency']} {price:.2f}",
+                    "52W High": f"{chart['currency']} {chart['fifty_two_week_high']:.2f}",
+                    "52W Low": f"{chart['currency']} {chart['fifty_two_week_low']:.2f}",
+                    "Day Range": f"{chart['day_low']:.2f} - {chart['day_high']:.2f}"
+                },
+                "Performance": {
+                    "Day Change": f"{chart['day_change']:+.2f}",
+                    "Day Change %": f"{chart['day_change_percent']:+.2f}%",
+                    "Previous Close": f"{chart['previous_close']:.2f}"
+                }
+            }
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/api/peers")
+def api_peers():
+    ticker = request.args.get("ticker", "").strip().upper()
+    if not ticker:
+        return jsonify({"success": False, "error": "Ticker is required"}), 400
+    
+    peer_map = {
+        "AAPL": ["MSFT", "GOOGL", "AMZN", "META"],
+        "MSFT": ["AAPL", "GOOGL", "AMZN", "NVDA"],
+        "NVDA": ["AMD", "INTC", "TSM", "QCOM"],
+        "TSLA": ["RIVN", "LCID", "F", "GM"],
+        "RELIANCE.NS": ["TCS.NS", "INFY.NS", "HDFCBANK.NS", "ICICIBANK.NS"],
+        "TCS.NS": ["INFY.NS", "WIPRO.NS", "HCLTECH.NS", "TECHM.NS"],
+        "INFY.NS": ["TCS.NS", "WIPRO.NS", "HCLTECH.NS", "LTIM.NS"],
+    }
+    peers_list = peer_map.get(ticker, ["AAPL", "MSFT", "NVDA", "GOOGL"] if not ticker.endswith(".NS") else ["RELIANCE.NS", "TCS.NS", "INFY.NS"])
+    
+    peers_data = []
+    for p in peers_list[:4]:
+        try:
+            c = _fetch_yahoo_chart(p, "1m")
+            peers_data.append({
+                "ticker": p,
+                "name": c["name"],
+                "price": c["current_price"],
+                "pe": None,
+                "market_cap": None,
+                "profit_margin": 0.15
+            })
+        except Exception:
+            pass
+            
+    return jsonify({"success": True, "ticker": ticker, "peers": peers_data})
+
+@app.route("/api/fundamentals")
+def api_fundamentals():
+    ticker = request.args.get("ticker", "").strip().upper()
+    if not ticker:
+        return jsonify({"success": False, "error": "Ticker is required"}), 400
+    
+    news_items = []
+    try:
+        rss_url = f"https://news.google.com/rss/search?q={urllib.parse.quote(ticker + ' stock')}&hl=en-US&gl=US&ceid=US:en"
+        req = urllib.request.Request(rss_url, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            import xml.etree.ElementTree as ET
+            tree = ET.fromstring(resp.read().decode("utf-8"))
+            for item in tree.findall(".//item")[:6]:
+                title = item.find("title").text if item.find("title") is not None else ""
+                link = item.find("link").text if item.find("link") is not None else ""
+                pub_date = item.find("pubDate").text if item.find("pubDate") is not None else ""
+                score = get_sentiment(title)
+                sentiment = "Positive" if score > 0.05 else ("Negative" if score < -0.05 else "Neutral")
+                news_items.append({
+                    "title": title,
+                    "link": link,
+                    "date": pub_date[:16] if pub_date else "Recent",
+                    "publisher": "Google News",
+                    "sentiment": sentiment,
+                    "score": round(score, 2),
+                    "summary": ""
+                })
+    except Exception:
+        pass
+        
+    return jsonify({
+        "success": True,
+        "ticker": ticker,
+        "news": news_items
+    })
+
+@app.route("/api/predict")
+def api_predict():
+    return jsonify({
+        "success": False,
+        "error": "LSTM model training requires a high-memory server environment. Run locally via python run.py for deep learning predictions."
+    }), 503
+
+# Export both handler and app
+handler = app
 
 if __name__ == "__main__":
-    from http.server import HTTPServer
     port = int(os.environ.get("PORT", 5000))
-    print(f"Server starting on http://localhost:{port}")
-    server = HTTPServer(("0.0.0.0", port), handler)
-    server.serve_forever()
+    app.run(host="0.0.0.0", port=port, debug=True)
